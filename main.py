@@ -1,7 +1,8 @@
+
 from fastapi import FastAPI
 
 app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"status": "OrthoAI online"}
+    return {"status": "OK - OrthoAI online"}
