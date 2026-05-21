@@ -18,17 +18,34 @@ def home():
 
 @app.post("/analisar")
 async def analisar(request: Request):
-    body = await request.json()
-    prompt = body.get("prompt", "")
-    
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4000,
-        system="Você é um especialista sênior em ortodontia com foco em alinhadores termoformados. Responda sempre em português brasileiro. Seja preciso, técnico e clinicamente fundamentado.",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    return {"resultado": message.content[0].text}
+    try:
+        body = await request.json()
+        prompt = body.get("prompt", "")
+
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+
+        if not api_key:
+            return {"erro": "API KEY não encontrada no servidor"}
+
+        client = anthropic.Anthropic(api_key=api_key)
+
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",  # modelo mais estável
+            max_tokens=2000,
+            system="Você é um especialista sênior em ortodontia com foco em alinhadores termoformados. Responda sempre em português brasileiro.",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        resposta = ""
+        if message.content:
+            for item in message.content:
+                if item.type == "text":
+                    resposta += item.text
+
+        return {"resultado": resposta}
+
+    except Exception as e:
+        return {"erro": str(e)}
 
